@@ -12,7 +12,6 @@ SIM_PREDICTION_SIG = 7.
 measurements = [5.6, 6., 6.1, 5.7, 5.8, 5.6,
                 6., 6.1, 5.7, 5.8, 5.6, 6., 6.1, 5.7, 5.8]
 # no motion, i.e. x_{t+1} = x_t. This can also be changed to new resampled mean from sim
-motions = [0., 0., 0.0, 0., 0., 0., 0., 0.0, 0., 0., 0., 0., 0.0, 0., 0.]
 
 # initial parameters
 measurement_sig = REAL_SENSOR_NOISE_SIG  # real robot pose sensor noise
@@ -54,7 +53,7 @@ if __name__ == "__main__":
         # measurement update, with uncertainty
         mu, sig = kf.update(y=measurements[n], R=measurement_sig)
         print('Update: [{}, {}]'.format(mu, sig))
-        motion_sig -= 0.5
+        measurement_sig -= 0.25
 
         if PLOT:
             plt.cla()
