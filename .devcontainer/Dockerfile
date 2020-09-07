@@ -15,4 +15,6 @@ COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     rm requirements.txt
 
-ENTRYPOINT /bin/zsh
+ENTRYPOINT source set_env.sh
+
+CMD bash
