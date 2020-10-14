@@ -79,7 +79,7 @@ class KalmanFilter(object):
             self.P = self.A.dot(self.P.dot(self.A.T)) + self.Q
         else:
             self._logger.warn(
-                "Using previously predicted x value again for prediction. update() may not have been called")
+                "Using previously predicted x value again for prediction. update() may not have been called. Not computing new prediction.")
 
         self.status = self.Status.PRED
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     measurements = [5.6, 6., 6.1, 5.7, 5.8, 5.6,
                     6., 6.1, 5.7, 5.8, 5.6, 6., 6.1, 5.7, 5.8]
     # no motion, i.e. x_{t+1} = x_t. This can also be changed to new resampled mean from sim
-    motions = [0., 0., 0.0, 0., 0., 0., 0., 0.0, 0., 0., 0., 0., 0.0, 0., 0.]
+    motions = [0., 0., 0.0, 0., 0., 0., 0., 0.0, 0., 0., 0., 0., 0.0, 0., 0.] # change these values to give motion
 
     # initial parameters
     measurement_sig = REAL_SENSOR_NOISE_SIG  # real robot pose sensor noise
@@ -145,4 +145,4 @@ if __name__ == "__main__":
         # measurement update, with uncertainty
         mu, sig = kf.update(y=measurements[n], R=measurement_sig)
         print('Update: [{}, {}]'.format(mu, sig))
-        motion_sig -= 0.5
+        motion_sig -= 0.5 # Assumes noise reduces; keep this constant by commenting out this line if needed.

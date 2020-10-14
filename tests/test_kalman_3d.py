@@ -72,7 +72,7 @@ if __name__ == "__main__":
         mu, sig = kf.update(y=measurements[n], R=measurement_sig)
         print('Update: {} \n{}\n\n'.format(mu, sig))
         # print (mu)
-        measurement_sig -= np.eye(3)*0.25
+        measurement_sig -= np.eye(3)*0.25 # Assumes noise reduces; keep this constant by commenting out this line if needed.
 
         if PLOT:
             plt.cla()

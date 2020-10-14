@@ -53,7 +53,7 @@ if __name__ == "__main__":
         # measurement update, with uncertainty
         mu, sig = kf.update(y=measurements[n], R=measurement_sig)
         print('Update: [{}, {}]'.format(mu, sig))
-        measurement_sig -= 0.25
+        measurement_sig -= 0.25 # Assumes noise reduces; keep this constant by commenting out this line if needed.
 
         if PLOT:
             plt.cla()
