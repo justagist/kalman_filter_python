@@ -1,21 +1,13 @@
 import numpy as np
-import enum
-import logging
+import filterpy.kalman as FPyKal
 
 
-class KalmanFilter(object):
+class KalmanFilter(FPyKal.KalmanFilter):
     """
-    Implementing basic Kalman Filter
-    """
+    Using filterpy KalmanFilter instead. Wrapping to support with original class's parameters for compatibility with old code.
 
-    class Status(enum.Enum):
-        """
-        Status class for showing the status of the state in the KF
-        """
-        NONE = -1
-        INIT = 0  # x is initialised
-        PRED = 1  # x has been predicted using predict()
-        UPDATED = 2  # x has been updated with measurements using update()
+    !! All new code should directly use filterpy.kalman.KalmanFilter instead of this class. !!
+    """
 
     def __init__(self, dim=3, x=None, P=None, A=None, H=None, Q=None, R=None):
         """
@@ -37,25 +29,19 @@ class KalmanFilter(object):
         :type R: np.ndarray or [[float]], shape:([y_dim,y_dim]), optional
         """
 
-        self.status = self.Status.NONE
-
-        self._logger = logging.Logger(__name__)
-        self._dim = dim
-
+        FPyKal.KalmanFilter.__init__(self, dim_x=dim, dim_z=dim)
+        if x is not None:
+            self.x = x
+        if P is not None:
+            self.P = P if isinstance(P,np.ndarray) else self.P*P
         self.H = np.asarray(H).reshape(
-            [self._dim, self._dim]) if H is not None else np.eye(self._dim)
+            [dim, dim]) if H is not None else np.eye(dim)
         self.Q = np.asarray(Q).reshape(
-            [self._dim, self._dim]) if Q is not None else np.eye(self._dim)
+            [dim, dim]) if Q is not None else np.eye(dim)
         self.R = np.asarray(R).reshape(
-            [self._dim, self._dim]) if R is not None else np.eye(self._dim)
-        self.A = np.asarray(A).reshape(
-            [self._dim, self._dim]) if A is not None else np.eye(self._dim)
-
-        self.x = np.asarray(x).reshape(
-            [self._dim, 1]) if x is not None else np.zeros([self._dim, 1])
-        self.P = np.asarray(P).reshape(
-            [self._dim, self._dim]) if P is not None else np.eye(self._dim)
-        self.status = self.Status.INIT
+            [dim, dim]) if R is not None else np.eye(dim)
+        self.F = np.asarray(A).reshape(
+            [dim, dim]) if A is not None else np.eye(dim)
 
     def predict(self, A=None, Q=None):
         """
@@ -68,22 +54,8 @@ class KalmanFilter(object):
         :return: predicted state mean, predicted state covariance
         :rtype: [np.ndarray, np.ndarray]
         """
-
-        if A is not None:
-            self.A = np.asarray(A).reshape([self._dim, self._dim])
-        if Q is not None:
-            self.Q = np.asarray(Q).reshape([self._dim, self._dim])
-
-        if self.status is not self.Status.PRED:
-            self.x = self.A.dot(self.x)
-            self.P = self.A.dot(self.P.dot(self.A.T)) + self.Q
-        else:
-            self._logger.warn(
-                "Using previously predicted x value again for prediction. update() may not have been called. Not computing new prediction.")
-
-        self.status = self.Status.PRED
-
-        return self.x, self.P
+        FPyKal.KalmanFilter.predict(self, F=A, Q=Q)
+        return self.x.copy().reshape([-1,1]), self.P.copy()
 
     def update(self, y, R=None, H=None):
         """
@@ -98,23 +70,8 @@ class KalmanFilter(object):
         :return: updated state mean, updated state covariance
         :rtype: [np.ndarray, np.ndarray]
         """
-
-        if R is not None:
-            self.R = np.asarray(R).reshape([self._dim, self._dim])
-        if H is not None:
-            self.H = np.asarray(H).reshape([self._dim, self._dim])
-
-        v = np.asarray(y).reshape([self._dim, 1]) - self.H.dot(self.x)
-        S = self.H.dot(self.P.dot(self.H.T)) + self.R
-        K = self.P.dot(self.H.T.dot(np.linalg.inv(S)))
-
-        self.x += K.dot(v)
-        self.P -= K.dot(S.dot(K.T))
-
-        self.status = self.Status.UPDATED
-
-        return self.x, self.P
-
+        FPyKal.KalmanFilter.update(self, z=y, R=R, H=H)
+        return self.x.copy().reshape([-1,1]), self.P.copy()
 
 if __name__ == "__main__":
 
