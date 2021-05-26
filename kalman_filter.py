@@ -59,7 +59,7 @@ class KalmanFilter(object):
 
     def predict(self, A=None, Q=None):
         """
-        Motion update (prediction step)
+        Motion update (prediction step) [NOTE: No control update]
 
         :param A: State transition function, defaults to previously defined value
         :type A: np.ndarray or [[float]], shape:([dim,dim]), optional
